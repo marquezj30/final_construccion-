@@ -67,10 +67,10 @@ Invoke-RestMethod -Method Post http://localhost:5000/api/auth/login `
   -Body '{"Email":"admin@pichangeo.local","Password":"Admin123!"}'
 ```
 
-Usa el `AccessToken` como bearer:
+Usa el `accessToken` como bearer:
 
 ```text
-Authorization: Bearer <AccessToken>
+Authorization: Bearer <accessToken>
 ```
 
 Refresh:
@@ -78,8 +78,8 @@ Refresh:
 ```http
 POST /api/auth/refresh
 {
-  "AccessToken": "...",
-  "RefreshToken": "..."
+  "accessToken": "...",
+  "refreshToken": "..."
 }
 ```
 

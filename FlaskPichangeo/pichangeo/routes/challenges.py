@@ -64,32 +64,30 @@ def challenge_response(challenge: TeamChallenge) -> dict:
     )
     schedule = challenge.court_schedule
     return {
-        "ChallengeId": challenge.id,
-        "ChallengingTeamId": challenge.challenging_team_id,
-        "ChallengingTeamName": challenge.challenging_team.team_name,
-        "ChallengingLeaderName": leader_member.user.name if leader_member and leader_member.user else "-",
-        "ChallengedTeamId": challenge.challenged_team_id,
-        "ChallengedTeamName": challenge.challenged_team.team_name,
-        "Message": challenge.message,
-        "ProposedDateTime": as_iso(challenge.proposed_date_time),
-        "Status": challenge.status,
-        "BookingId": challenge.booking_id,
-        "CourtNumber": schedule.court.number if schedule and schedule.court else None,
-        "StartTime": as_time(schedule.start_time) if schedule else None,
-        "EndTime": as_time(schedule.end_time) if schedule else None,
-        "CreatedAt": as_iso(challenge.created_at),
-        "ResponseDate": as_iso(challenge.response_date),
+        "challengeId": challenge.id,
+        "challengingTeamId": challenge.challenging_team_id,
+        "challengingTeamName": challenge.challenging_team.team_name,
+        "challengingLeaderName": leader_member.user.name if leader_member and leader_member.user else "-",
+        "challengedTeamId": challenge.challenged_team_id,
+        "challengedTeamName": challenge.challenged_team.team_name,
+        "message": challenge.message,
+        "proposedDateTime": as_iso(challenge.proposed_date_time),
+        "status": challenge.status,
+        "bookingId": challenge.booking_id,
+        "courtNumber": schedule.court.number if schedule and schedule.court else None,
+        "startTime": as_time(schedule.start_time) if schedule else None,
+        "endTime": as_time(schedule.end_time) if schedule else None,
+        "createdAt": as_iso(challenge.created_at),
+        "responseDate": as_iso(challenge.response_date),
     }
 
 
 def has_active_booking(court_schedule_id: int, booking_date) -> bool:
-    return db.session.query(
-        Booking.query.filter(
-            Booking.court_schedule_id == court_schedule_id,
-            Booking.booking_date == booking_date,
-            Booking.status != "cancelled",
-        ).exists()
-    ).scalar()
+    return Booking.query.filter(
+        Booking.court_schedule_id == court_schedule_id,
+        Booking.booking_date == booking_date,
+        Booking.status != "cancelled",
+    ).first() is not None
 
 
 def create_booking_for_schedule(user_id: int, schedule: CourtSchedule, booking_date, description: str) -> Booking:

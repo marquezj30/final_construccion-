@@ -21,7 +21,7 @@ def test_client_can_book_available_schedule_and_pay_advance(
     court = court_response.get_json()
 
     schedule_response = client.post(
-        f"/api/courts/{court['Id']}/schedules",
+        f"/api/courts/{court['id']}/schedules",
         headers=admin_headers,
         json={
             "DayOfWeek": 1,
@@ -39,22 +39,22 @@ def test_client_can_book_available_schedule_and_pay_advance(
     )
     assert available_response.status_code == 200
     available = available_response.get_json()
-    assert [item["CourtScheduleId"] for item in available] == [schedule["Id"]]
-    assert available[0]["TotalCost"] == 200
+    assert [item["courtScheduleId"] for item in available] == [schedule["id"]]
+    assert available[0]["totalCost"] == 200
 
     booking_response = client.post(
         "/api/bookings",
         headers=player["headers"],
         json={
-            "CourtScheduleId": schedule["Id"],
+            "CourtScheduleId": schedule["id"],
             "BookingDate": "2026-07-06",
         },
     )
     assert booking_response.status_code == 201
     booking = booking_response.get_json()
-    assert booking["Status"] == "pending"
-    assert booking["TotalAmount"] == 200
-    assert booking["Advance"] == 100
+    assert booking["status"] == "pending"
+    assert booking["totalAmount"] == 200
+    assert booking["advance"] == 100
 
     unavailable_response = client.get(
         "/api/courts/available?BookingDate=2026-07-06",
@@ -66,23 +66,23 @@ def test_client_can_book_available_schedule_and_pay_advance(
     payment_response = client.post(
         "/api/payments",
         headers=player["headers"],
-        json={"BookingId": booking["Id"], "PaymentType": "advance"},
+        json={"BookingId": booking["id"], "PaymentType": "advance"},
     )
     assert payment_response.status_code == 200
     payment = payment_response.get_json()
-    assert payment["PaymentStatus"] == "approved"
-    assert payment["PaymentType"] == "advance"
-    assert payment["Amount"] == 100
+    assert payment["paymentStatus"] == "approved"
+    assert payment["paymentType"] == "advance"
+    assert payment["amount"] == 100
 
     duplicate_payment = client.post(
         "/api/payments",
         headers=player["headers"],
-        json={"BookingId": booking["Id"], "PaymentType": "advance"},
+        json={"BookingId": booking["id"], "PaymentType": "advance"},
     )
     assert duplicate_payment.status_code == 409
 
     payments_response = client.get(
-        f"/api/payments/{booking['Id']}",
+        f"/api/payments/{booking['id']}",
         headers=player["headers"],
     )
     assert payments_response.status_code == 200

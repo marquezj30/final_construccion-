@@ -1,0 +1,131 @@
+<section class="page-section">
+  <div class="section-heading">
+    <div>
+      <p class="section-kicker">{{ isLeader ? 'V21' : 'V22' }}</p>
+      <h2>{{ team?.teamName || 'Detalle de Equipo' }}</h2>
+    </div>
+    <a class="btn secondary" routerLink="/cliente/equipos">Volver</a>
+  </div>
+
+  @if (error) {
+    <p class="inline-warning">{{ error }}</p>
+  }
+  @if (success) {
+    <p class="inline-success">{{ success }}</p>
+  }
+
+  @if (team) {
+    <div class="detail-grid">
+      <article class="panel detail-card">
+        <div class="panel-title">
+          <h3>{{ team.teamName }}</h3>
+          <span class="status approved">{{ team.averageStars }} estrellas</span>
+        </div>
+        <dl>
+          <div><dt>Lider</dt><dd>{{ team.leaderName }}</dd></div>
+          <div><dt>Miembros</dt><dd>{{ team.memberCount }}</dd></div>
+          <div><dt>Tu rol</dt><dd>{{ isLeader ? 'Lider' : 'Jugador' }}</dd></div>
+        </dl>
+
+        @if (isLeader) {
+          <div class="stacked-actions">
+            <label>
+              Editar nombre
+              <input type="text" [(ngModel)]="editName" />
+            </label>
+            <button class="btn secondary" type="button" [disabled]="saving" (click)="updateName()">Guardar nombre</button>
+          </div>
+        } @else {
+          <button class="btn secondary" type="button" [disabled]="saving" (click)="leaveTeam()">Salir del equipo</button>
+        }
+      </article>
+
+      @if (isLeader) {
+        <article class="panel">
+          <h3>Enviar reto</h3>
+          <label>
+            Equipo rival
+            <select [(ngModel)]="challengeTeamId">
+              @for (item of otherTeams; track item.id) {
+                <option [value]="item.id">{{ item.teamName }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            Mensaje
+            <textarea [(ngModel)]="challengeMessage" rows="3"></textarea>
+          </label>
+          <button class="btn" type="button" [disabled]="saving || otherTeams.length === 0" (click)="sendChallenge()">Enviar reto</button>
+        </article>
+      }
+    </div>
+
+    <article class="panel">
+      <div class="panel-title">
+        <h3>Miembros</h3>
+      </div>
+      <div class="member-grid">
+        @for (member of team.members; track member.memberId) {
+          <div class="member-card">
+            <div>
+              <strong>{{ member.displayName }}</strong>
+              <small>{{ member.role === 'leader' ? 'Lider' : 'Jugador' }} - {{ member.isGhost ? 'Fantasma' : 'Real' }}</small>
+            </div>
+            @if (isLeader && member.role !== 'leader') {
+              <div class="row-actions">
+                @if (!member.isGhost) {
+                  <button type="button" (click)="promoteMember(member)">Promover</button>
+                }
+                <button type="button" (click)="removeMember(member)">Expulsar</button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </article>
+
+    @if (isLeader) {
+      <div class="content-grid two-columns">
+        <article class="panel form-panel">
+          <p class="section-kicker">V23</p>
+          <h3>Agregar Miembro Real</h3>
+          <label>
+            Buscar por nombre, username o email
+            <div class="autocomplete-wrap">
+              <input
+                type="text"
+                [(ngModel)]="realUsername"
+                (input)="onRealUsernameInput()"
+                autocomplete="off"
+                placeholder="Escribe para buscar..."
+              />
+              @if (showSuggestions) {
+                <ul class="autocomplete-list">
+                  @for (item of clientSuggestions; track item.id) {
+                    <li (mousedown)="selectSuggestion(item)">
+                      <strong>{{ item.name }}</strong>
+                      <small>{{ item.username }} · {{ item.email }}</small>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          </label>
+          <button class="btn" type="button" [disabled]="saving || !realUsername.trim()" (click)="addRealMember()">Agregar real</button>
+        </article>
+
+        <article class="panel form-panel">
+          <p class="section-kicker">V24</p>
+          <h3>Agregar Miembro Fantasma</h3>
+          <label>
+            Nombre del jugador externo
+            <input type="text" [(ngModel)]="ghostName" />
+          </label>
+          <button class="btn" type="button" [disabled]="saving || !ghostName.trim()" (click)="addGhostMember()">Agregar fantasma</button>
+        </article>
+      </div>
+    }
+  } @else if (loading) {
+    <article class="panel"><p>Cargando equipo...</p></article>
+  }
+</section>

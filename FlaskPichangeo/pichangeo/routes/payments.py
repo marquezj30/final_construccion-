@@ -19,20 +19,20 @@ def payment_response(payment: Payment) -> dict:
     schedule = booking.court_schedule
     court = schedule.court
     return {
-        "PaymentId": payment.id,
-        "TransactionCode": payment.transaction_code,
-        "CourtNumber": court.number,
-        "AdminName": court.user.name if court.user else "",
-        "BookingDate": as_iso(booking.booking_date),
-        "StartTime": as_time(schedule.start_time),
-        "EndTime": as_time(schedule.end_time),
-        "ClientId": booking.user_id,
-        "ClientName": booking.user.name if booking.user else "",
-        "Amount": as_number(payment.amount),
-        "PaymentType": payment.payment_type,
-        "PaymentStatus": payment.payment_status,
-        "PaymentDate": as_iso(payment.payment_date),
-        "GatewayResponse": payment.gateway_response,
+        "paymentId": payment.id,
+        "transactionCode": payment.transaction_code,
+        "courtNumber": court.number,
+        "adminName": court.user.name if court.user else "",
+        "bookingDate": as_iso(booking.booking_date),
+        "startTime": as_time(schedule.start_time),
+        "endTime": as_time(schedule.end_time),
+        "clientId": booking.user_id,
+        "clientName": booking.user.name if booking.user else "",
+        "amount": as_number(payment.amount),
+        "paymentType": payment.payment_type,
+        "paymentStatus": payment.payment_status,
+        "paymentDate": as_iso(payment.payment_date),
+        "gatewayResponse": payment.gateway_response,
     }
 
 

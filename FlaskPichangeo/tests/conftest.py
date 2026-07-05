@@ -64,7 +64,7 @@ def auth_headers(client):
             json={"Email": email, "Password": password},
         )
         assert response.status_code == 200
-        access_token = response.get_json()["AccessToken"]
+        access_token = response.get_json()["accessToken"]
         return {"Authorization": f"Bearer {access_token}"}
 
     return login

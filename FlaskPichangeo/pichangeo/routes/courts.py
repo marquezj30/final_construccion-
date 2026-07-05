@@ -26,36 +26,36 @@ ACTIVE_BOOKING_STATUSES = ["pending", "approved"]
 
 def court_response(court: Court) -> dict:
     return {
-        "Id": court.id,
-        "UserId": court.user_id,
-        "AdminName": court.user.name if court.user else "",
-        "Number": court.number,
-        "Description": court.description,
-        "SurfaceType": court.surface_type,
-        "PlayerCapacity": court.player_capacity,
-        "Status": court.status,
-        "PhotoUrl": court.photo_url,
-        "Gps": court.gps,
-        "Address": court.address,
-        "Stars": court.stars,
-        "Comments": court.comments,
-        "CreatedAt": as_iso(court.created_at),
-        "UpdatedAt": as_iso(court.updated_at),
+        "id": court.id,
+        "userId": court.user_id,
+        "adminName": court.user.name if court.user else "",
+        "number": court.number,
+        "description": court.description,
+        "surfaceType": court.surface_type,
+        "playerCapacity": court.player_capacity,
+        "status": court.status,
+        "photoUrl": court.photo_url,
+        "gps": court.gps,
+        "address": court.address,
+        "stars": court.stars,
+        "comments": court.comments,
+        "createdAt": as_iso(court.created_at),
+        "updatedAt": as_iso(court.updated_at),
     }
 
 
 def schedule_response(schedule: CourtSchedule) -> dict:
     return {
-        "Id": schedule.id,
-        "CourtId": schedule.court_id,
-        "CourtNumber": schedule.court.number if schedule.court else None,
-        "DayOfWeek": schedule.day_of_week,
-        "StartTime": as_time(schedule.start_time),
-        "EndTime": as_time(schedule.end_time),
-        "Available": schedule.available,
-        "CostPerHour": as_number(schedule.cost_per_hour),
-        "CreatedAt": as_iso(schedule.created_at),
-        "UpdatedAt": as_iso(schedule.updated_at),
+        "id": schedule.id,
+        "courtId": schedule.court_id,
+        "courtNumber": schedule.court.number if schedule.court else None,
+        "dayOfWeek": schedule.day_of_week,
+        "startTime": as_time(schedule.start_time),
+        "endTime": as_time(schedule.end_time),
+        "available": schedule.available,
+        "costPerHour": as_number(schedule.cost_per_hour),
+        "createdAt": as_iso(schedule.created_at),
+        "updatedAt": as_iso(schedule.updated_at),
     }
 
 
@@ -63,19 +63,19 @@ def available_schedule_response(schedule: CourtSchedule) -> dict:
     hours = time_hours(schedule.start_time, schedule.end_time)
     total_cost = schedule.cost_per_hour * hours
     return {
-        "CourtScheduleId": schedule.id,
-        "CourtId": schedule.court_id,
-        "CourtNumber": schedule.court.number,
-        "AdminName": schedule.court.user.name if schedule.court and schedule.court.user else "",
-        "Description": schedule.court.description,
-        "SurfaceType": schedule.court.surface_type,
-        "PlayerCapacity": schedule.court.player_capacity,
-        "Address": schedule.court.address,
-        "DayOfWeek": schedule.day_of_week,
-        "StartTime": as_time(schedule.start_time),
-        "EndTime": as_time(schedule.end_time),
-        "CostPerHour": as_number(schedule.cost_per_hour),
-        "TotalCost": as_number(total_cost),
+        "courtScheduleId": schedule.id,
+        "courtId": schedule.court_id,
+        "courtNumber": schedule.court.number,
+        "adminName": schedule.court.user.name if schedule.court and schedule.court.user else "",
+        "description": schedule.court.description,
+        "surfaceType": schedule.court.surface_type,
+        "playerCapacity": schedule.court.player_capacity,
+        "address": schedule.court.address,
+        "dayOfWeek": schedule.day_of_week,
+        "startTime": as_time(schedule.start_time),
+        "endTime": as_time(schedule.end_time),
+        "costPerHour": as_number(schedule.cost_per_hour),
+        "totalCost": as_number(total_cost),
     }
 
 
@@ -98,7 +98,7 @@ def has_overlapping_schedule(court_id: int, day_of_week: int, start_time, end_ti
     )
     if ignored_id is not None:
         query = query.filter(CourtSchedule.id != ignored_id)
-    return db.session.query(query.exists()).scalar()
+    return query.first() is not None
 
 
 def reserved_schedule_ids(schedule_ids: list[int], booking_date: datetime) -> set[int]:
@@ -200,6 +200,17 @@ def deactivate_court(court_id: int):
 
     db.session.commit()
     return jsonify(court_response(court))
+
+
+@bp.get("/api/courts/schedules")
+@jwt_required(roles=["admin"])
+def get_all_schedules():
+    schedules = (
+        CourtSchedule.query.join(Court)
+        .order_by(Court.number, CourtSchedule.day_of_week, CourtSchedule.start_time)
+        .all()
+    )
+    return jsonify([schedule_response(schedule) for schedule in schedules])
 
 
 @bp.get("/api/courts/available")

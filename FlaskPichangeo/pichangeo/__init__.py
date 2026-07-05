@@ -1,4 +1,5 @@
 from flask import Flask, current_app, jsonify
+from flask_cors import CORS
 
 from .auth import hash_password
 from .config import Config
@@ -10,6 +11,11 @@ def create_app(config_object=Config):
     app = Flask(__name__)
     app.config.from_object(config_object)
 
+    CORS(
+        app,
+        resources={r"/api/*": {"origins": app.config.get("CORS_ORIGINS", ["http://localhost:4200"])}},
+        supports_credentials=True,
+    )
     db.init_app(app)
     oauth.init_app(app)
     register_oauth_clients(app)

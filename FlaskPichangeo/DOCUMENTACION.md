@@ -426,8 +426,8 @@ Devuelve:
 
 ```json
 {
-  "AccessToken": "...",
-  "RefreshToken": "..."
+  "accessToken": "...",
+  "refreshToken": "..."
 }
 ```
 
@@ -441,15 +441,15 @@ Redirige a Auth0 y al volver por callback tambien devuelve:
 
 ```json
 {
-  "AccessToken": "...",
-  "RefreshToken": "..."
+  "accessToken": "...",
+  "refreshToken": "..."
 }
 ```
 
 El resto de endpoints usa:
 
 ```text
-Authorization: Bearer <AccessToken>
+Authorization: Bearer <accessToken>
 ```
 
 ## Proveedor OAuth Elegido

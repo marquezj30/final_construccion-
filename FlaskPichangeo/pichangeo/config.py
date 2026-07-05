@@ -104,3 +104,9 @@ class Config:
         "AUTH0_CALLBACK_URL",
         "http://127.0.0.1:5000/api/oauth/auth0/callback",
     )
+
+    CORS_ORIGINS = [
+        origin.strip()
+        for origin in os.getenv("CORS_ORIGINS", "http://localhost:4200").split(",")
+        if origin.strip()
+    ]

@@ -1,0 +1,62 @@
+<section class="page-section">
+  <div class="section-heading">
+    <div>
+      <p class="section-kicker">i18n / l10n</p>
+      <h2>{{ 'Idioma' | t }}</h2>
+    </div>
+  </div>
+
+  <article class="panel settings-panel settings-language-panel">
+    <div class="panel-title">
+      <h3>{{ 'Selecciona el idioma' | t }}</h3>
+    </div>
+    <div class="language-grid" role="list">
+      @for (language of i18n.languages; track language.code) {
+        <button
+          class="language-card"
+          type="button"
+          role="listitem"
+          [attr.aria-label]="language.nativeLabel + ' ' + language.locale"
+          [attr.data-language]="language.code"
+          [class.active]="i18n.currentLanguage() === language.code"
+          (click)="setLanguage(language.code)"
+        >
+          <span class="language-flag" aria-hidden="true">{{ language.flag }}</span>
+          <strong>{{ language.nativeLabel }}</strong>
+          <small>{{ language.locale }}</small>
+        </button>
+      }
+    </div>
+  </article>
+
+  <div class="content-grid">
+    <article class="panel settings-panel">
+      <div class="panel-title">
+        <h3>{{ 'Localizacion de datos' | t }}</h3>
+      </div>
+      <dl class="settings-preview">
+        <div>
+          <dt>{{ 'Formato activo' | t }}</dt>
+          <dd>{{ i18n.currentOption.locale }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'Fecha de ejemplo' | t }}</dt>
+          <dd>{{ l10n.dateTime(sampleDate) }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'Moneda de ejemplo' | t }}</dt>
+          <dd>{{ l10n.currency(sampleAmount) }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'Tipo de cambio' | t }}</dt>
+          <dd>{{ l10n.exchangeRateLabel() }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'Numero de ejemplo' | t }}</dt>
+          <dd>{{ l10n.number(sampleNumber) }}</dd>
+        </div>
+      </dl>
+      <p class="inline-success">{{ 'Los cambios se guardan automaticamente en este navegador.' | t }}</p>
+    </article>
+  </div>
+</section>

@@ -30,30 +30,28 @@ def booking_response(booking: Booking) -> dict:
     schedule = booking.court_schedule
     court = schedule.court
     return {
-        "Id": booking.id,
-        "BookingCode": booking.booking_code,
-        "CourtNumber": court.number,
-        "AdminName": court.user.name if court.user else "",
-        "ScheduleDay": schedule.day_of_week,
-        "StartTime": as_time(schedule.start_time),
-        "EndTime": as_time(schedule.end_time),
-        "TotalAmount": as_number(booking.total_amount),
-        "Advance": as_number(booking.advance),
-        "Status": booking.status,
-        "LostAdvance": booking.lost_advance,
-        "BookingDate": as_iso(booking.booking_date),
-        "CreatedAt": as_iso(booking.created_at),
+        "id": booking.id,
+        "bookingCode": booking.booking_code,
+        "courtNumber": court.number,
+        "adminName": court.user.name if court.user else "",
+        "scheduleDay": schedule.day_of_week,
+        "startTime": as_time(schedule.start_time),
+        "endTime": as_time(schedule.end_time),
+        "totalAmount": as_number(booking.total_amount),
+        "advance": as_number(booking.advance),
+        "status": booking.status,
+        "lostAdvance": booking.lost_advance,
+        "bookingDate": as_iso(booking.booking_date),
+        "createdAt": as_iso(booking.created_at),
     }
 
 
 def has_active_booking(court_schedule_id: int, booking_date) -> bool:
-    return db.session.query(
-        Booking.query.filter(
-            Booking.court_schedule_id == court_schedule_id,
-            Booking.booking_date == booking_date,
-            Booking.status.in_(ACTIVE_BOOKING_STATUSES),
-        ).exists()
-    ).scalar()
+    return Booking.query.filter(
+        Booking.court_schedule_id == court_schedule_id,
+        Booking.booking_date == booking_date,
+        Booking.status.in_(ACTIVE_BOOKING_STATUSES),
+    ).first() is not None
 
 
 @bp.post("/api/bookings")

@@ -1,0 +1,34 @@
+<main class="auth-page">
+  <section class="auth-visual">
+    <div class="auth-brand">
+      <span>P</span>
+      <strong>Pichangueo</strong>
+    </div>
+    <div class="visual-card">
+      <img src="/auth-football.jpg" alt="Jugadores disputando un partido de futbol" />
+    </div>
+  </section>
+
+  <section class="auth-panel login-panel" aria-labelledby="login-title">
+    <p class="eyebrow">INGRESAR</p>
+    <h1 id="login-title">Ingreso a tu usuario</h1>
+    <p class="message" *ngIf="registered">Registro exitoso. Ya puedes iniciar sesion.</p>
+    <p class="message error" *ngIf="error">{{ error }}</p>
+
+    <form (ngSubmit)="submit()">
+      <label>
+        Correo
+        <input type="email" name="email" [(ngModel)]="email" autocomplete="email" required />
+      </label>
+
+      <label>
+        Password
+        <input type="password" name="password" [(ngModel)]="password" autocomplete="current-password" required />
+      </label>
+
+      <button type="submit" [disabled]="loading">{{ loading ? 'Ingresando...' : 'Ingresar' }}</button>
+    </form>
+
+    <a routerLink="/registro">Crear una cuenta nueva</a>
+  </section>
+</main>

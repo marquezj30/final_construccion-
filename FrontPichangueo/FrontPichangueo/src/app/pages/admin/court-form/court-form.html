@@ -1,0 +1,90 @@
+<section class="page-section court-page">
+  <div class="section-heading">
+    <div>
+      <p class="section-kicker">V05</p>
+      <h2>{{ isEdit ? 'Editar Cancha' : 'Crear Cancha' }}</h2>
+    </div>
+    <a class="btn secondary" routerLink="/admin/canchas">Volver</a>
+  </div>
+
+  <article class="court-editor">
+    @if (error) {
+      <p class="inline-warning wide">{{ error }}</p>
+    }
+
+    <div class="editor-aside">
+      <div class="photo-preview">
+        @if (photoPreviewUrl) {
+          <img [src]="photoPreviewUrl" alt="Vista previa de la cancha" />
+        } @else {
+          <span>Sin foto</span>
+        }
+      </div>
+
+      <label class="upload-box">
+        <input type="file" accept="image/png,image/jpeg,image/webp" (change)="onPhotoSelected($event)" />
+        <span>Adjuntar foto local</span>
+        <small>{{ selectedFileName || 'PNG, JPG o WEBP de la cancha' }}</small>
+      </label>
+    </div>
+
+    <form class="admin-form court-form" (ngSubmit)="save()">
+      @if (loading) {
+        <p>Cargando datos desde Azure...</p>
+      }
+
+      @if (isEdit) {
+        <label class="wide">
+          Cancha registrada
+          <select
+            name="selectedCourt"
+            [ngModel]="selectedCourtId"
+            (ngModelChange)="onCourtChange($event)"
+          >
+            @for (court of courts; track court.id) {
+              <option [value]="court.id">#{{ court.id }} - {{ court.name }}</option>
+            }
+          </select>
+        </label>
+      }
+
+      <label>
+        Nombre de la cancha
+        <input type="text" name="name" [(ngModel)]="form.name" placeholder="Ej. Cancha Principal" required />
+      </label>
+
+      <label>
+        Tipo de superficie
+        <select name="surfaceType" [(ngModel)]="form.surfaceType">
+          <option>Sintetica</option>
+          <option>Natural</option>
+          <option>Cemento deportivo</option>
+        </select>
+      </label>
+
+      <label>
+        Capacidad de jugadores
+        <input type="number" name="playerCapacity" [(ngModel)]="form.playerCapacity" required />
+      </label>
+
+      <label>
+        GPS
+        <input type="text" name="gps" [(ngModel)]="form.gps" placeholder="-12.0464,-77.0428" />
+      </label>
+
+      <label class="wide">
+        Direccion
+        <input type="text" name="address" [(ngModel)]="form.address" />
+      </label>
+
+      <label class="wide">
+        Descripcion
+        <textarea name="description" [(ngModel)]="form.description" rows="4"></textarea>
+      </label>
+
+      <button class="btn" type="submit" [disabled]="loading || saving || (isEdit && !selectedCourtId)">
+        {{ saving ? 'Guardando...' : 'Guardar cancha' }}
+      </button>
+    </form>
+  </article>
+</section>

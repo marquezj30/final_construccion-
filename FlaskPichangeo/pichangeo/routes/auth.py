@@ -66,7 +66,7 @@ def login():
 
     access_token = generate_access_token(user)
     refresh_token = store_refresh_token(user)
-    return jsonify({"AccessToken": access_token, "RefreshToken": refresh_token})
+    return jsonify({"accessToken": access_token, "refreshToken": refresh_token})
 
 
 @bp.post("/api/auth/refresh")
@@ -95,4 +95,4 @@ def refresh():
 
     new_access_token = generate_access_token(user)
     new_refresh_token = store_refresh_token(user)
-    return jsonify({"AccessToken": new_access_token, "RefreshToken": new_refresh_token})
+    return jsonify({"accessToken": new_access_token, "refreshToken": new_refresh_token})

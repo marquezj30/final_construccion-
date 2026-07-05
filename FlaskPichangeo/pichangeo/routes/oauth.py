@@ -116,8 +116,8 @@ def auth0_callback():
         {
             "message": "Login OAuth exitoso",
             "provider": "auth0",
-            "AccessToken": access_token,
-            "RefreshToken": refresh_token,
+            "accessToken": access_token,
+            "refreshToken": refresh_token,
             "user": {
                 "id": user.id,
                 "username": user.username,

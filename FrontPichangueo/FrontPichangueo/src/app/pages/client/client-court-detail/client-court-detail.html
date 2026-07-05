@@ -1,0 +1,72 @@
+<section class="page-section">
+  <div class="section-heading">
+    <div>
+      <p class="section-kicker">V13</p>
+      <h2>{{ court?.name || 'Detalle de Cancha' }}</h2>
+    </div>
+    <a class="btn secondary" routerLink="/cliente/inicio">Volver</a>
+  </div>
+
+  @if (error) {
+    <p class="inline-warning">{{ error }}</p>
+  }
+
+  @if (court) {
+    <article class="panel court-hero">
+      <div class="court-photo large" aria-hidden="true">
+        <span>{{ court.name.slice(0, 1) }}</span>
+      </div>
+      <div>
+        <p class="section-kicker">{{ court.adminName }}</p>
+        <h3>{{ court.name }}</h3>
+        <p>{{ court.description || 'Cancha disponible para partidos y reservas.' }}</p>
+        <div class="meta-grid">
+          <span>{{ court.surfaceType }}</span>
+          <span>{{ court.playerCapacity }} jugadores</span>
+          <span>{{ court.address || 'Direccion por confirmar' }}</span>
+          <span>{{ court.status ? 'Activa' : 'Inactiva' }}</span>
+        </div>
+      </div>
+    </article>
+  }
+
+  <article class="panel">
+    <div class="panel-title">
+      <h3>Horarios disponibles para la semana</h3>
+      <input type="date" [(ngModel)]="selectedDate" (change)="loadCourtWeek()" aria-label="Fecha de inicio" />
+    </div>
+
+    @if (loading) {
+      <p>Cargando horarios...</p>
+    }
+
+    <div class="week-grid">
+      @for (day of week; track day.date) {
+        <div class="day-card">
+          <strong>{{ day.label }}</strong>
+          @for (schedule of day.schedules; track schedule.courtScheduleId) {
+            <div class="schedule-row">
+              <span>{{ timeLabel(schedule.startTime) }} - {{ timeLabel(schedule.endTime) }}</span>
+              <small>{{ schedule.costPerHour | money }}/h</small>
+              <a
+                class="table-link"
+                routerLink="/cliente/reservar"
+                [queryParams]="{
+                  courtId: courtId,
+                  courtScheduleId: schedule.courtScheduleId,
+                  bookingDate: day.date,
+                  durationHours: maxDuration(schedule)
+                }"
+              >
+                Reservar
+              </a>
+            </div>
+          }
+          @if (day.schedules.length === 0) {
+            <p class="muted">Sin horarios libres.</p>
+          }
+        </div>
+      }
+    </div>
+  </article>
+</section>

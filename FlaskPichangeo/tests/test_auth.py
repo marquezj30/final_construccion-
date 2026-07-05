@@ -17,15 +17,15 @@ def test_register_login_and_refresh_tokens(client):
     )
     assert login.status_code == 200
     tokens = login.get_json()
-    assert tokens["AccessToken"]
-    assert tokens["RefreshToken"]
+    assert tokens["accessToken"]
+    assert tokens["refreshToken"]
 
     refresh = client.post("/api/auth/refresh", json=tokens)
     assert refresh.status_code == 200
     refreshed = refresh.get_json()
-    assert refreshed["AccessToken"]
-    assert refreshed["RefreshToken"]
-    assert refreshed["RefreshToken"] != tokens["RefreshToken"]
+    assert refreshed["accessToken"]
+    assert refreshed["refreshToken"]
+    assert refreshed["refreshToken"] != tokens["refreshToken"]
 
 
 def test_users_requires_admin_role(client, auth_headers):
@@ -45,7 +45,7 @@ def test_users_requires_admin_role(client, auth_headers):
 
     denied = client.get(
         "/api/users",
-        headers={"Authorization": f"Bearer {client_login['AccessToken']}"},
+        headers={"Authorization": f"Bearer {client_login['accessToken']}"},
     )
     assert denied.status_code == 403
 
