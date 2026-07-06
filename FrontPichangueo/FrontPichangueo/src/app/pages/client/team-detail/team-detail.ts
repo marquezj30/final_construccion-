@@ -21,7 +21,6 @@ export class TeamDetail implements OnInit {
   readonly teamId = Number(this.route.snapshot.paramMap.get('id'));
   readonly currentUser = this.auth.currentUser();
   team: Team | undefined;
-  allTeams: Team[] = [];
   loading = true;
   saving = false;
   error = '';
@@ -31,8 +30,6 @@ export class TeamDetail implements OnInit {
   ghostName = '';
   clientSuggestions: ClientSearchResult[] = [];
   showSuggestions = false;
-  challengeTeamId = 0;
-  challengeMessage = '';
 
   private readonly searchSubject = new Subject<string>();
 
@@ -44,19 +41,8 @@ export class TeamDetail implements OnInit {
     return this.myMember?.role === 'leader';
   }
 
-  get otherTeams(): Team[] {
-    return this.allTeams.filter((team) => team.id !== this.teamId);
-  }
-
   ngOnInit(): void {
     this.loadTeam();
-    this.api.getTeams().subscribe({
-      next: (teams) => {
-        this.allTeams = teams;
-        this.challengeTeamId = this.otherTeams[0]?.id ?? 0;
-        this.cdr.detectChanges();
-      },
-    });
 
     this.searchSubject.pipe(
       debounceTime(300),
@@ -126,24 +112,6 @@ export class TeamDetail implements OnInit {
 
   leaveTeam(): void {
     this.runAction(this.api.leaveTeam(this.teamId), 'Saliste del equipo.');
-  }
-
-  sendChallenge(): void {
-    if (!this.challengeTeamId) {
-      this.error = 'Selecciona un equipo para retar.';
-      return;
-    }
-
-    this.runAction(
-      this.api.sendChallenge({
-        challengedTeamId: this.challengeTeamId,
-        message: this.challengeMessage,
-        proposedDateTime: null,
-        courtScheduleId: null,
-        isExternal: true,
-      }),
-      'Reto enviado.',
-    );
   }
 
   private runAction(request: Observable<unknown>, message: string): void {

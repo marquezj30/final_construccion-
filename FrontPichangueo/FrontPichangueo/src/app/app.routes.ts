@@ -15,7 +15,12 @@ import { ClientCourtDetail } from './pages/client/client-court-detail/client-cou
 import { ClientHome } from './pages/client/client-home/client-home';
 import { ClientPayment } from './pages/client/client-payment/client-payment';
 import { ClientTeams } from './pages/client/client-teams/client-teams';
+import { ChallengeBooking } from './pages/client/challenge-booking/challenge-booking';
 import { ConfirmBooking } from './pages/client/confirm-booking/confirm-booking';
+import { ReceivedChallenges } from './pages/client/received-challenges/received-challenges';
+import { SendChallenge } from './pages/client/send-challenge/send-challenge';
+import { SentChallenges } from './pages/client/sent-challenges/sent-challenges';
+import { TeamChallengeSearch } from './pages/client/team-challenge-search/team-challenge-search';
 import { TeamDetail } from './pages/client/team-detail/team-detail';
 import { TeamForm } from './pages/client/team-form/team-form';
 import { TeamSearch } from './pages/client/team-search/team-search';
@@ -63,6 +68,11 @@ export const routes: Routes = [
       { path: 'equipos', component: ClientTeams },
       { path: 'equipos/buscar', component: TeamSearch },
       { path: 'equipos/nuevo', component: TeamForm },
+      { path: 'equipos/retar', component: TeamChallengeSearch },
+      { path: 'equipos/retar/:id', component: SendChallenge },
+      { path: 'equipos/retos/recibidos', component: ReceivedChallenges },
+      { path: 'equipos/retos/enviados', component: SentChallenges },
+      { path: 'equipos/retos/enviados/:id/reservar', component: ChallengeBooking },
       { path: 'equipos/:id', component: TeamDetail },
       { path: 'configuracion', component: Settings },
     ],

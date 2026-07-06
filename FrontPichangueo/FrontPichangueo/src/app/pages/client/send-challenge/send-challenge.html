@@ -1,0 +1,79 @@
+<section class="page-section compact">
+  <div class="section-heading">
+    <div>
+      <p class="section-kicker">V26</p>
+      <h2>Enviar Reto</h2>
+    </div>
+    <a class="btn secondary" routerLink="/cliente/equipos/retar">Volver</a>
+  </div>
+
+  @if (loading) {
+    <article class="panel"><p>Cargando...</p></article>
+  } @else if (!myTeamId) {
+    <article class="panel">
+      <p>{{ error }}</p>
+    </article>
+  } @else {
+    @if (error) {
+      <p class="inline-warning">{{ error }}</p>
+    }
+
+    <article class="panel form-panel">
+      <div class="panel-title">
+        <h3>Retar a {{ team?.teamName }}</h3>
+        <span class="status">{{ team?.averageStars }} estrellas</span>
+      </div>
+      <p>Lider: {{ team?.leaderName }} - {{ team?.memberCount }} miembro(s)</p>
+
+      <label class="checkbox-row">
+        <input type="checkbox" [(ngModel)]="isExternal" />
+        Reto externo (ya lo acordamos fuera del sistema)
+      </label>
+
+      <label>
+        Mensaje (opcional)
+        <textarea [(ngModel)]="message" rows="3"></textarea>
+      </label>
+
+      <label>
+        Fecha propuesta{{ isExternal ? ' (opcional)' : '' }}
+        <input type="date" [(ngModel)]="proposedDate" />
+      </label>
+      <label>
+        Hora propuesta{{ isExternal ? ' (opcional)' : '' }}
+        <input type="time" [(ngModel)]="proposedTime" />
+      </label>
+
+      <label>
+        Buscar horario de cancha disponible (opcional)
+        <div class="actions">
+          <input type="date" [(ngModel)]="scheduleDate" />
+          <button class="btn secondary" type="button" (click)="loadSchedules()">Buscar horarios</button>
+        </div>
+      </label>
+
+      @if (loadingSchedules) {
+        <p>Buscando horarios...</p>
+      }
+      @if (availableSchedules.length > 0) {
+        <label>
+          Horario de cancha
+          <select [(ngModel)]="selectedScheduleId">
+            <option [ngValue]="null">Sin horario de cancha</option>
+            @for (schedule of availableSchedules; track schedule.courtScheduleId) {
+              <option [ngValue]="schedule.courtScheduleId">
+                {{ schedule.courtName }} - {{ timeLabel(schedule.startTime) }} a {{ timeLabel(schedule.endTime) }}
+              </option>
+            }
+          </select>
+        </label>
+      }
+
+      <div class="actions">
+        <button class="btn" type="button" [disabled]="saving" (click)="send()">
+          {{ saving ? 'Enviando...' : 'Enviar reto' }}
+        </button>
+      </div>
+    </article>
+  }
+</section>

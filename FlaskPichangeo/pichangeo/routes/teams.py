@@ -114,6 +114,22 @@ def get_all_teams_admin():
     return jsonify([team_response(team) for team in teams])
 
 
+@bp.get("/api/teams/my")
+@jwt_required(roles=["client"])
+def get_my_teams():
+    teams = (
+        SoccerTeam.query.join(TeamMember)
+        .filter(
+            TeamMember.user_id == current_user_id(),
+            TeamMember.status == True,
+            SoccerTeam.status == True,
+        )
+        .order_by(SoccerTeam.team_name)
+        .all()
+    )
+    return jsonify([team_detail_response(team) for team in teams])
+
+
 @bp.get("/api/teams/<int:team_id>")
 @jwt_required()
 def get_team_by_id(team_id: int):
@@ -162,6 +178,57 @@ def get_members(team_id: int):
     return jsonify([member_response(member) for member in members])
 
 
+def _add_real_member(team_id: int, target_user: User):
+    if target_user.id == current_user_id():
+        return error("No puedes agregarte a ti mismo.", 400)
+    if target_user.role != "client":
+        return error("Solo se pueden agregar usuarios con rol cliente.", 400)
+
+    already_member = TeamMember.query.filter_by(
+        team_id=team_id,
+        user_id=target_user.id,
+        status=True,
+    ).first()
+    if already_member:
+        return error("El usuario ya es miembro activo de este equipo.", 409)
+
+    member = TeamMember(
+        team_id=team_id,
+        user_id=target_user.id,
+        role="player",
+        status=True,
+        joined_at=utcnow(),
+    )
+    db.session.add(member)
+    db.session.commit()
+    return jsonify(member_response(member))
+
+
+@bp.get("/api/teams/users/search")
+@jwt_required(roles=["client"])
+def search_users():
+    query = (request.args.get("q") or request.args.get("Q") or "").strip()
+    if len(query) < 2:
+        return jsonify([])
+
+    like = f"%{query}%"
+    users = (
+        User.query.filter(
+            User.role == "client",
+            db.or_(User.name.ilike(like), User.username.ilike(like)),
+        )
+        .order_by(User.name)
+        .limit(10)
+        .all()
+    )
+    return jsonify(
+        [
+            {"id": user.id, "name": user.name, "username": user.username, "email": user.email}
+            for user in users
+        ]
+    )
+
+
 @bp.post("/api/teams/<int:team_id>/members/real")
 @jwt_required(roles=["client"])
 def add_real_member(team_id: int):
@@ -175,33 +242,31 @@ def add_real_member(team_id: int):
     except ValueError as exc:
         return error(str(exc), 400)
 
-    if target_user_id == current_user_id():
-        return error("No puedes agregarte a ti mismo.", 400)
-
     target_user = db.session.get(User, target_user_id)
     if target_user is None:
         return error("Usuario no encontrado.", 404)
-    if target_user.role != "client":
-        return error("Solo se pueden agregar usuarios con rol cliente.", 400)
 
-    already_member = TeamMember.query.filter_by(
-        team_id=team_id,
-        user_id=target_user_id,
-        status=True,
-    ).first()
-    if already_member:
-        return error("El usuario ya es miembro activo de este equipo.", 409)
+    return _add_real_member(team_id, target_user)
 
-    member = TeamMember(
-        team_id=team_id,
-        user_id=target_user_id,
-        role="player",
-        status=True,
-        joined_at=utcnow(),
-    )
-    db.session.add(member)
-    db.session.commit()
-    return jsonify(member_response(member))
+
+@bp.post("/api/teams/<int:team_id>/members/real/by-username")
+@jwt_required(roles=["client"])
+def add_real_member_by_username(team_id: int):
+    leader = get_leader_member(current_user_id(), team_id)
+    if leader is None:
+        return error("No autorizado.", 403)
+
+    data = request.get_json(silent=True) or {}
+    try:
+        username = str(required_field(data, "username", "Username")).strip()
+    except ValueError as exc:
+        return error(str(exc), 400)
+
+    target_user = User.query.filter_by(username=username).first()
+    if target_user is None:
+        return error("Usuario no encontrado.", 404)
+
+    return _add_real_member(team_id, target_user)
 
 
 @bp.post("/api/teams/<int:team_id>/members/ghost")

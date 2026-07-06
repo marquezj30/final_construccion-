@@ -232,13 +232,36 @@ def accept_challenge(challenge_id: int):
     if challenge.status:
         return error("El reto ya fue aceptado.", 409)
 
+    data = request.get_json(silent=True) or {}
+    schedule_id_raw = field(data, "courtScheduleId", "CourtScheduleId", "court_schedule_id")
+    booking_date_raw = field(data, "bookingDate", "BookingDate", "booking_date")
+
+    if schedule_id_raw is not None:
+        try:
+            schedule_id = int(schedule_id_raw)
+        except (TypeError, ValueError):
+            return error("courtScheduleId inválido.", 400)
+        schedule = db.session.get(CourtSchedule, schedule_id)
+        if schedule is None:
+            return error("Horario no encontrado.", 404)
+    else:
+        schedule = challenge.court_schedule
+
+    try:
+        if booking_date_raw:
+            booking_date = parse_date_datetime(booking_date_raw)
+        elif challenge.proposed_date_time:
+            booking_date = parse_date_datetime(challenge.proposed_date_time)
+        else:
+            booking_date = parse_date_datetime(utcnow())
+    except ValueError as exc:
+        return error(str(exc), 400)
+
     challenge.status = True
     challenge.response_date = utcnow()
     warning_message = None
 
-    if challenge.court_schedule_id and challenge.court_schedule:
-        booking_date = parse_date_datetime(utcnow())
-        schedule = challenge.court_schedule
+    if schedule is not None:
         schedule_available = schedule.available and schedule.court.status
         if not schedule_available or has_active_booking(schedule.id, booking_date):
             warning_message = (
@@ -253,6 +276,7 @@ def accept_challenge(challenge_id: int):
                 "Reserva creada automáticamente al aceptar un reto.",
             )
             challenge.booking_id = booking.id
+            challenge.court_schedule_id = schedule.id
 
     db.session.commit()
     result = challenge_response(challenge)
