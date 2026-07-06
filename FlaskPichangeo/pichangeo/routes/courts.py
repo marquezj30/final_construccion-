@@ -153,7 +153,7 @@ def get_courts():
 
 
 @bp.get("/api/courts/<int:court_id>")
-@jwt_required(roles=["admin"])
+@jwt_required()
 def get_court_by_id(court_id: int):
     court = db.session.get(Court, court_id)
     if court is None:
