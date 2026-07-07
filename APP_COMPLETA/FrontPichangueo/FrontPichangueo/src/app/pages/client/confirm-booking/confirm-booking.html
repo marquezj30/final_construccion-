@@ -1,0 +1,38 @@
+<section class="page-section compact">
+  <div class="section-heading">
+    <div>
+      <p class="section-kicker">V14</p>
+      <h2>Confirmar Reserva</h2>
+    </div>
+    <a class="btn secondary" [routerLink]="['/cliente/canchas', courtId]" [queryParams]="{ fecha: bookingDate }">Volver</a>
+  </div>
+
+  @if (error) {
+    <p class="inline-warning">{{ error }}</p>
+  }
+
+  @if (schedule) {
+    <article class="panel detail-card">
+      <div class="panel-title">
+        <h3>{{ schedule.courtName }}</h3>
+        <span class="status pending">Pendiente</span>
+      </div>
+      <dl>
+        <div><dt>Fecha</dt><dd>{{ bookingDate | localDate }}</dd></div>
+        <div><dt>Horario base</dt><dd>{{ timeLabel(schedule.startTime) }} - {{ timeLabel(schedule.endTime) }}</dd></div>
+        <div><dt>Horas a reservar</dt><dd><input type="number" min="1" [max]="maxDuration" [(ngModel)]="durationHours" /></dd></div>
+        <div><dt>Horario reservado</dt><dd>{{ timeLabel(schedule.startTime) }} - {{ endTimePreview }}</dd></div>
+        <div><dt>Costo por hora</dt><dd>{{ schedule.costPerHour | money }}</dd></div>
+        <div><dt>Monto total</dt><dd>{{ totalAmount | money }}</dd></div>
+        <div><dt>Adelanto 50%</dt><dd>{{ advance | money }}</dd></div>
+      </dl>
+      <div class="actions">
+        <button class="btn" type="button" [disabled]="saving || durationHours < 1 || durationHours > maxDuration" (click)="confirmBooking()">
+          {{ saving ? 'Confirmando...' : 'Confirmar reserva' }}
+        </button>
+      </div>
+    </article>
+  } @else if (loading) {
+    <article class="panel"><p>Cargando resumen...</p></article>
+  }
+</section>

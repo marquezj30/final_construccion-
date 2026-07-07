@@ -1,0 +1,59 @@
+<section class="page-section compact">
+  <div class="section-heading">
+    <div>
+      <p class="section-kicker">V17</p>
+      <h2>Pago Simulado</h2>
+    </div>
+    <a class="btn secondary" [routerLink]="['/cliente/reservas', bookingId]">Volver</a>
+  </div>
+
+  @if (error) {
+    <p class="inline-warning">{{ error }}</p>
+  }
+
+  @if (booking) {
+    <article class="panel detail-card">
+      <div class="panel-title">
+        <h3>{{ booking.courtName }}</h3>
+        <span class="status pending">Pago simulado</span>
+      </div>
+      <dl>
+        <div><dt>Reserva</dt><dd>{{ booking.bookingCode }}</dd></div>
+        <div><dt>Fecha</dt><dd>{{ booking.bookingDate | localDate }}</dd></div>
+        <div><dt>Horario</dt><dd>{{ timeLabel(booking.startTime) }} - {{ timeLabel(booking.endTime) }}</dd></div>
+        <div><dt>Total reserva</dt><dd>{{ booking.totalAmount | money }}</dd></div>
+        <div>
+          <dt>Tipo de pago</dt>
+          <dd>
+            <select [(ngModel)]="paymentType" aria-label="Tipo de pago">
+              <option value="advance">Adelanto</option>
+              <option value="full">Pago completo</option>
+              <option value="balance">Saldo</option>
+            </select>
+          </dd>
+        </div>
+        <div><dt>Monto a pagar</dt><dd>{{ amountToPay | money }}</dd></div>
+      </dl>
+
+      @if (!payment) {
+        <button class="btn" type="button" [disabled]="saving" (click)="pay()">
+          {{ saving ? 'Procesando...' : 'Confirmar pago' }}
+        </button>
+      }
+    </article>
+
+    @if (payment) {
+      <article class="panel gateway">
+        <h3>Comprobante generado</h3>
+        <dl>
+          <div><dt>Transaccion</dt><dd>{{ payment.transactionCode }}</dd></div>
+          <div><dt>Estado</dt><dd>{{ payment.gatewayResponse.status }}</dd></div>
+          <div><dt>Auth code</dt><dd>{{ payment.gatewayResponse.authCode }}</dd></div>
+          <div><dt>Mensaje</dt><dd>{{ payment.gatewayResponse.message }}</dd></div>
+        </dl>
+      </article>
+    }
+  } @else if (loading) {
+    <article class="panel"><p>Cargando pago...</p></article>
+  }
+</section>

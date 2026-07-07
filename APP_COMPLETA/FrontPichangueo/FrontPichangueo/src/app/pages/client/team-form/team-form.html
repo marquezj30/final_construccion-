@@ -1,0 +1,22 @@
+<section class="page-section compact">
+  <div class="section-heading">
+    <div>
+      <p class="section-kicker">V20</p>
+      <h2>Crear Equipo</h2>
+    </div>
+    <a class="btn secondary" routerLink="/cliente/equipos">Volver</a>
+  </div>
+
+  <article class="panel form-panel">
+    @if (error) {
+      <p class="inline-warning">{{ error }}</p>
+    }
+    <label>
+      Nombre del equipo
+      <input type="text" [(ngModel)]="teamName" placeholder="Ej. Los Tigres FC" />
+    </label>
+    <button class="btn" type="button" [disabled]="saving" (click)="createTeam()">
+      {{ saving ? 'Creando...' : 'Crear equipo' }}
+    </button>
+  </article>
+</section>

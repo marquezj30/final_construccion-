@@ -1,0 +1,54 @@
+<section class="page-section">
+  <div class="section-heading">
+    <div>
+      <p class="section-kicker">V09</p>
+      <h2>Listado de Pagos</h2>
+    </div>
+  </div>
+
+  <article class="panel">
+    @if (error) {
+      <p class="inline-warning">{{ error }}</p>
+    }
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Codigo transaccion</th>
+            <th>Cliente</th>
+            <th>Cancha</th>
+            <th>Monto</th>
+            <th>Tipo de pago</th>
+            <th>Estado</th>
+            <th>Fecha</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading) {
+            <tr>
+              <td colspan="8">Cargando pagos desde Azure...</td>
+            </tr>
+          }
+          @for (payment of payments; track payment.paymentId) {
+            <tr>
+              <td>{{ payment.transactionCode }}</td>
+              <td>{{ payment.clientName }}</td>
+              <td>{{ payment.courtName }}</td>
+              <td>{{ payment.amount | money }}</td>
+              <td>{{ paymentTypeLabel(payment.paymentType) }}</td>
+              <td><span class="status" [class]="payment.paymentStatus">{{ paymentStatusLabel(payment.paymentStatus) }}</span></td>
+              <td>{{ payment.paymentDate | localDate }}</td>
+              <td><a class="table-link" routerLink="/admin/pagos/{{ payment.paymentId }}">Detalle</a></td>
+            </tr>
+          }
+          @if (!loading && payments.length === 0) {
+            <tr>
+              <td colspan="8">Todavia no hay pagos registrados.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </article>
+</section>

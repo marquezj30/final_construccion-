@@ -1,0 +1,38 @@
+<section class="page-section">
+  <div class="section-heading">
+    <div>
+      <p class="section-kicker">V19</p>
+      <h2>Mis Equipos</h2>
+    </div>
+    <div class="actions">
+      <a class="btn secondary" routerLink="/cliente/equipos/buscar">Buscar equipos</a>
+      <a class="btn" routerLink="/cliente/equipos/nuevo">Crear equipo</a>
+    </div>
+  </div>
+
+  @if (error) {
+    <p class="inline-warning">{{ error }}</p>
+  }
+
+  <div class="card-list">
+    @if (loading) {
+      <article class="panel"><p>Cargando equipos...</p></article>
+    }
+    @for (team of teams; track team.id) {
+      <article class="panel booking-card">
+        <div>
+          <p class="section-kicker">{{ roleIn(team) }}</p>
+          <h3>{{ team.teamName }}</h3>
+          <p>{{ team.memberCount }} miembro(s) activos - {{ team.averageStars }} estrellas</p>
+        </div>
+        <a class="table-link" [routerLink]="['/cliente/equipos', team.id]">Detalle</a>
+      </article>
+    }
+    @if (!loading && teams.length === 0) {
+      <article class="panel empty-state">
+        <h3>No tienes equipo activo</h3>
+        <p>Puedes crear uno nuevo o buscar equipos para unirte.</p>
+      </article>
+    }
+  </div>
+</section>
