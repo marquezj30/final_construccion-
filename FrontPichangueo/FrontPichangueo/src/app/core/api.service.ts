@@ -46,6 +46,16 @@ export interface ChallengePayload {
   isExternal: boolean;
 }
 
+export interface AcceptChallengePayload {
+  courtScheduleId?: number | null;
+  bookingDate?: string | null;
+}
+
+export interface AcceptChallengeResult {
+  challenge: Challenge;
+  warning?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
@@ -228,6 +238,33 @@ export class ApiService {
 
   sendChallenge(payload: ChallengePayload): Observable<Challenge> {
     return this.http.post<Challenge>(`${API_BASE_URL}/challenges`, payload);
+  }
+
+  getSentChallenges(): Observable<Challenge[]> {
+    return this.http.get<Challenge[]>(`${API_BASE_URL}/challenges/sent`);
+  }
+
+  getReceivedChallenges(): Observable<Challenge[]> {
+    return this.http.get<Challenge[]>(`${API_BASE_URL}/challenges/received`);
+  }
+
+  acceptChallenge(challengeId: number, payload: AcceptChallengePayload): Observable<Challenge | AcceptChallengeResult> {
+    return this.http.put<Challenge | AcceptChallengeResult>(
+      `${API_BASE_URL}/challenges/${challengeId}/accept`,
+      payload,
+    );
+  }
+
+  rejectChallenge(challengeId: number): Observable<Challenge> {
+    return this.http.put<Challenge>(`${API_BASE_URL}/challenges/${challengeId}/reject`, {});
+  }
+
+  getChallenge(challengeId: number): Observable<Challenge> {
+    return this.http.get<Challenge>(`${API_BASE_URL}/challenges/${challengeId}`);
+  }
+
+  createChallengeBooking(challengeId: number, payload: { courtScheduleId: number; bookingDate: string }): Observable<Challenge> {
+    return this.http.post<Challenge>(`${API_BASE_URL}/challenges/${challengeId}/booking`, payload);
   }
 
   private normalizeCourt(court: Court): Court {

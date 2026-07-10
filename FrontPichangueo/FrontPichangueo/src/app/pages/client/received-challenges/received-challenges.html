@@ -1,0 +1,122 @@
+<section class="page-section">
+  <div class="section-heading">
+    <div>
+      <p class="section-kicker">V27</p>
+      <h2>Retos Recibidos</h2>
+    </div>
+    <a class="btn secondary" routerLink="/cliente/equipos">Volver</a>
+  </div>
+
+  @if (error) {
+    <p class="inline-warning">{{ error }}</p>
+  }
+  @if (success) {
+    <p class="inline-success">{{ success }}</p>
+  }
+
+  @if (loading) {
+    <article class="panel"><p>Cargando retos...</p></article>
+  } @else {
+    <div class="card-list">
+      @for (challenge of challenges; track challenge.challengeId) {
+        <article class="panel booking-card">
+          <div>
+            <p class="section-kicker">{{ challenge.challengingLeaderName }}</p>
+            <h3>{{ challenge.challengingTeamName }}</h3>
+            @if (challenge.message) {
+              <p>{{ challenge.message }}</p>
+            }
+            @if (challenge.proposedDateTime) {
+              <p>Fecha propuesta: {{ challenge.proposedDateTime | localDateTime }}</p>
+            }
+            @if (challenge.courtNumber) {
+              <p>Cancha {{ challenge.courtNumber }} - {{ timeLabel(challenge.startTime!) }} a {{ timeLabel(challenge.endTime!) }}</p>
+            }
+            <span
+              class="status"
+              [class.approved]="state(challenge) === 'accepted'"
+              [class.cancelled]="state(challenge) === 'rejected'"
+            >
+              {{ state(challenge) === 'accepted' ? 'Aceptado' : state(challenge) === 'rejected' ? 'Rechazado' : 'Pendiente' }}
+            </span>
+          </div>
+          @if (state(challenge) === 'pending') {
+            <div class="actions">
+              <button class="btn" type="button" (click)="openAcceptModal(challenge)">Aceptar</button>
+              <button
+                class="btn secondary"
+                type="button"
+                [disabled]="rejectingId === challenge.challengeId"
+                (click)="reject(challenge)"
+              >
+                {{ rejectingId === challenge.challengeId ? 'Rechazando...' : 'Rechazar' }}
+              </button>
+            </div>
+          }
+        </article>
+      }
+      @if (challenges.length === 0) {
+        <article class="panel"><p>No has recibido retos todavia.</p></article>
+      }
+    </div>
+  }
+
+  @if (challengeToAccept) {
+    <div class="modal-backdrop">
+      <article class="panel modal-card">
+        <h3>Aceptar reto de {{ challengeToAccept.challengingTeamName }}</h3>
+
+        @if (acceptError) {
+          <p class="inline-warning">{{ acceptError }}</p>
+        }
+
+        @if (challengeToAccept.proposedDateTime) {
+          <p>Fecha propuesta: {{ challengeToAccept.proposedDateTime | localDateTime }}</p>
+        }
+        @if (challengeToAccept.courtNumber) {
+          <p>
+            Horario propuesto: Cancha {{ challengeToAccept.courtNumber }} -
+            {{ timeLabel(challengeToAccept.startTime!) }} a {{ timeLabel(challengeToAccept.endTime!) }}
+          </p>
+        }
+
+        <label>
+          Fecha de la reserva (opcional, puedes cambiarla)
+          <input type="date" [(ngModel)]="newDate" />
+        </label>
+
+        <label>
+          Buscar otro horario de cancha disponible (opcional)
+          <div class="actions">
+            <input type="date" [(ngModel)]="scheduleSearchDate" />
+            <button class="btn secondary" type="button" (click)="loadSchedulesForAccept()">Buscar horarios</button>
+          </div>
+        </label>
+
+        @if (loadingSchedules) {
+          <p>Buscando horarios...</p>
+        }
+        @if (availableSchedules.length > 0) {
+          <label>
+            Horario de cancha
+            <select [(ngModel)]="newScheduleId">
+              <option [ngValue]="null">Mantener horario propuesto</option>
+              @for (schedule of availableSchedules; track schedule.courtScheduleId) {
+                <option [ngValue]="schedule.courtScheduleId">
+                  {{ schedule.courtName }} - {{ timeLabel(schedule.startTime) }} a {{ timeLabel(schedule.endTime) }}
+                </option>
+              }
+            </select>
+          </label>
+        }
+
+        <div class="actions">
+          <button class="btn secondary" type="button" (click)="closeAcceptModal()">Cancelar</button>
+          <button class="btn" type="button" [disabled]="accepting" (click)="confirmAccept()">
+            {{ accepting ? 'Confirmando...' : 'Confirmar reto' }}
+          </button>
+        </div>
+      </article>
+    </div>
+  }
+</section>

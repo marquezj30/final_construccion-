@@ -1,0 +1,61 @@
+<section class="page-section">
+  <div class="section-heading">
+    <div>
+      <p class="section-kicker">V25</p>
+      <h2>Buscar Equipos para Retar</h2>
+    </div>
+    <a class="btn secondary" routerLink="/cliente/equipos">Volver</a>
+  </div>
+
+  @if (loading) {
+    <article class="panel"><p>Cargando equipos...</p></article>
+  } @else if (!isLeader) {
+    <article class="panel">
+      <p>Debes ser lider de un equipo para retar a otros equipos.</p>
+    </article>
+  } @else {
+    @if (error) {
+      <p class="inline-warning">{{ error }}</p>
+    }
+
+    <div class="tabs">
+      <button type="button" class="tab" [class.active]="tab === 'buscar'" (click)="tab = 'buscar'">Buscar</button>
+      <button type="button" class="tab" [class.active]="tab === 'recomendados'" (click)="tab = 'recomendados'">
+        Recomendados
+      </button>
+    </div>
+
+    @if (tab === 'buscar') {
+      <div class="filters">
+        <input
+          type="search"
+          [(ngModel)]="search"
+          placeholder="Buscar por nombre de equipo"
+          aria-label="Buscar equipos para retar"
+        />
+      </div>
+    }
+
+    <div class="card-list">
+      @for (team of (tab === 'buscar' ? searchResults : recommendedTeams); track team.id) {
+        <article class="panel booking-card">
+          <div>
+            <p class="section-kicker">{{ team.leaderName }}</p>
+            <h3>{{ team.teamName }}</h3>
+            <p>{{ team.memberCount }} miembro(s) - {{ team.averageStars }} estrellas</p>
+            @if (alreadyChallenged(team)) {
+              <span class="status">Ya retado</span>
+            }
+          </div>
+          <div class="actions">
+            <a class="table-link" [routerLink]="['/cliente/equipos', team.id]">Ver equipo</a>
+            <a class="btn" [routerLink]="['/cliente/equipos/retar', team.id]">Retar</a>
+          </div>
+        </article>
+      }
+      @if ((tab === 'buscar' ? searchResults : recommendedTeams).length === 0) {
+        <article class="panel"><p>No hay equipos para mostrar.</p></article>
+      }
+    </div>
+  }
+</section>

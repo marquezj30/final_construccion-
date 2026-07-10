@@ -1,0 +1,71 @@
+<section class="page-section compact">
+  <div class="section-heading">
+    <div>
+      <p class="section-kicker">V30</p>
+      <h2>Crear Reserva del Reto</h2>
+    </div>
+    <a class="btn secondary" routerLink="/cliente/equipos/retos/enviados">Volver</a>
+  </div>
+
+  @if (loading) {
+    <article class="panel"><p>Cargando reto...</p></article>
+  } @else if (challenge) {
+    @if (error) {
+      <p class="inline-warning">{{ error }}</p>
+    }
+
+    <article class="panel detail-card">
+      <div class="panel-title">
+        <h3>Reto contra {{ challenge.challengedTeamName }}</h3>
+        <span class="status" [class.approved]="challenge.status">
+          {{ challenge.status ? 'Aceptado' : 'Pendiente' }}
+        </span>
+      </div>
+      @if (challenge.message) {
+        <p>{{ challenge.message }}</p>
+      }
+
+      @if (!challenge.status) {
+        <p class="inline-warning">El reto debe estar aceptado antes de crear una reserva.</p>
+      } @else if (challenge.bookingId) {
+        <p>Este reto ya tiene una reserva vinculada.</p>
+        <a class="btn secondary" [routerLink]="['/cliente/reservas', challenge.bookingId]">Ver reserva</a>
+      } @else {
+        <div class="form-panel">
+          <label>
+            Fecha de la reserva
+            <input type="date" [(ngModel)]="scheduleSearchDate" />
+          </label>
+
+          <div class="actions">
+            <button class="btn secondary" type="button" (click)="loadSchedules()">Buscar horarios</button>
+          </div>
+
+          @if (loadingSchedules) {
+            <p>Buscando horarios...</p>
+          }
+          @if (availableSchedules.length > 0) {
+            <label>
+              Horario de cancha
+              <select [(ngModel)]="selectedScheduleId">
+                <option [ngValue]="null">Selecciona un horario</option>
+                @for (schedule of availableSchedules; track schedule.courtScheduleId) {
+                  <option [ngValue]="schedule.courtScheduleId">
+                    {{ schedule.courtName }} - {{ timeLabel(schedule.startTime) }} a {{ timeLabel(schedule.endTime) }} -
+                    {{ schedule.costPerHour | money }}/hora
+                  </option>
+                }
+              </select>
+            </label>
+          }
+
+          <div class="actions">
+            <button class="btn" type="button" [disabled]="saving || !selectedScheduleId" (click)="createBooking()">
+              {{ saving ? 'Creando...' : 'Crear reserva' }}
+            </button>
+          </div>
+        </div>
+      }
+    </article>
+  }
+</section>

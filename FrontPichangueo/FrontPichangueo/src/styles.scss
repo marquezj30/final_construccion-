@@ -240,6 +240,30 @@ td {
   flex-wrap: wrap;
 }
 
+.tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.tab {
+  border: 0;
+  border-radius: 999px;
+  min-height: 40px;
+  padding: 0 18px;
+  background: #edf0f2;
+  color: #4c6069;
+  font-weight: 900;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.tab.active {
+  background: #18c747;
+  color: #073316;
+}
+
 .filters select,
 .filters input,
 .admin-form input,
@@ -402,10 +426,15 @@ td {
   font-weight: 900;
 }
 
-.week-grid,
-.member-grid {
+.week-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 14px;
+}
+
+.member-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
 }
 
@@ -419,10 +448,17 @@ td {
 
 .schedule-row,
 .payment-line,
-.booking-card,
-.member-card {
+.booking-card {
   align-items: center;
   grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.member-card {
+  grid-template-columns: 1fr;
+}
+
+.member-card .row-actions {
+  justify-content: flex-start;
 }
 
 .schedule-row {
@@ -661,6 +697,10 @@ dd {
   .shortcuts {
     grid-template-columns: 1fr;
   }
+
+  .member-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 720px) {
@@ -676,7 +716,8 @@ dd {
   .admin-form,
   .detail-card dl,
   .language-grid,
-  .gateway dl {
+  .gateway dl,
+  .member-grid {
     grid-template-columns: 1fr;
   }
 }

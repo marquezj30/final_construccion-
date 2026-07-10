@@ -42,20 +42,13 @@
 
       @if (isLeader) {
         <article class="panel">
-          <h3>Enviar reto</h3>
-          <label>
-            Equipo rival
-            <select [(ngModel)]="challengeTeamId">
-              @for (item of otherTeams; track item.id) {
-                <option [value]="item.id">{{ item.teamName }}</option>
-              }
-            </select>
-          </label>
-          <label>
-            Mensaje
-            <textarea [(ngModel)]="challengeMessage" rows="3"></textarea>
-          </label>
-          <button class="btn" type="button" [disabled]="saving || otherTeams.length === 0" (click)="sendChallenge()">Enviar reto</button>
+          <h3>Retos</h3>
+          <p>Busca otros equipos activos y envia un reto para coordinar un partido.</p>
+          <div class="actions">
+            <a class="btn" routerLink="/cliente/equipos/retar">Buscar equipos para retar</a>
+            <a class="btn secondary" routerLink="/cliente/equipos/retos/recibidos">Retos recibidos</a>
+            <a class="btn secondary" routerLink="/cliente/equipos/retos/enviados">Retos enviados</a>
+          </div>
         </article>
       }
     </div>

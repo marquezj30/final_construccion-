@@ -1,0 +1,54 @@
+<section class="page-section">
+  <div class="section-heading">
+    <div>
+      <p class="section-kicker">V29</p>
+      <h2>Retos Enviados</h2>
+    </div>
+    <a class="btn secondary" routerLink="/cliente/equipos">Volver</a>
+  </div>
+
+  @if (error) {
+    <p class="inline-warning">{{ error }}</p>
+  }
+
+  @if (loading) {
+    <article class="panel"><p>Cargando retos...</p></article>
+  } @else {
+    <div class="card-list">
+      @for (challenge of challenges; track challenge.challengeId) {
+        <article class="panel booking-card">
+          <div>
+            <p class="section-kicker">Reto a</p>
+            <h3>{{ challenge.challengedTeamName }}</h3>
+            @if (challenge.message) {
+              <p>{{ challenge.message }}</p>
+            }
+            @if (challenge.proposedDateTime) {
+              <p>Fecha propuesta: {{ challenge.proposedDateTime | localDateTime }}</p>
+            }
+            @if (challenge.courtNumber) {
+              <p>Cancha {{ challenge.courtNumber }} - {{ timeLabel(challenge.startTime!) }} a {{ timeLabel(challenge.endTime!) }}</p>
+            }
+            <span class="status" [class.approved]="challenge.status">
+              {{ challenge.status ? 'Aceptado' : 'Pendiente' }}
+            </span>
+          </div>
+          @if (challenge.status) {
+            <div class="actions">
+              @if (challenge.bookingId) {
+                <a class="table-link" [routerLink]="['/cliente/reservas', challenge.bookingId]">Ver reserva</a>
+              } @else {
+                <a class="btn" [routerLink]="['/cliente/equipos/retos/enviados', challenge.challengeId, 'reservar']">
+                  Crear reserva
+                </a>
+              }
+            </div>
+          }
+        </article>
+      }
+      @if (challenges.length === 0) {
+        <article class="panel"><p>Todavia no has enviado retos.</p></article>
+      }
+    </div>
+  }
+</section>
