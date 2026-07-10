@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from sqlalchemy.orm import selectinload
 
 from ..auth import current_user_id, jwt_required
 from ..extensions import db
@@ -7,6 +8,11 @@ from ..utils import as_iso, error, field, required_field
 
 
 bp = Blueprint("teams", __name__)
+
+TEAM_EAGER_OPTIONS = (
+    selectinload(SoccerTeam.members).selectinload(TeamMember.user),
+    selectinload(SoccerTeam.ratings_received),
+)
 
 
 def get_leader_member(user_id: int, team_id: int | None = None) -> TeamMember | None:
@@ -103,14 +109,19 @@ def create_team():
 @bp.get("/api/teams")
 @jwt_required()
 def get_all_teams():
-    teams = SoccerTeam.query.filter_by(status=True).order_by(SoccerTeam.team_name).all()
+    teams = (
+        SoccerTeam.query.options(*TEAM_EAGER_OPTIONS)
+        .filter_by(status=True)
+        .order_by(SoccerTeam.team_name)
+        .all()
+    )
     return jsonify([team_response(team) for team in teams])
 
 
 @bp.get("/api/teams/all")
 @jwt_required(roles=["admin"])
 def get_all_teams_admin():
-    teams = SoccerTeam.query.order_by(SoccerTeam.team_name).all()
+    teams = SoccerTeam.query.options(*TEAM_EAGER_OPTIONS).order_by(SoccerTeam.team_name).all()
     return jsonify([team_response(team) for team in teams])
 
 
@@ -118,7 +129,8 @@ def get_all_teams_admin():
 @jwt_required(roles=["client"])
 def get_my_teams():
     teams = (
-        SoccerTeam.query.join(TeamMember)
+        SoccerTeam.query.options(*TEAM_EAGER_OPTIONS)
+        .join(TeamMember)
         .filter(
             TeamMember.user_id == current_user_id(),
             TeamMember.status == True,
@@ -133,7 +145,7 @@ def get_my_teams():
 @bp.get("/api/teams/<int:team_id>")
 @jwt_required()
 def get_team_by_id(team_id: int):
-    team = db.session.get(SoccerTeam, team_id)
+    team = SoccerTeam.query.options(*TEAM_EAGER_OPTIONS).filter_by(id=team_id).first()
     if team is None:
         return error("Equipo no encontrado.", 404)
     return jsonify(team_detail_response(team))

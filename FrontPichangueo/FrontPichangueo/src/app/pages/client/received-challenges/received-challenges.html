@@ -53,6 +53,11 @@
               </button>
             </div>
           }
+          @if (canRate(challenge)) {
+            <div class="actions">
+              <button class="btn" type="button" (click)="openRateModal(challenge)">Calificar equipo</button>
+            </div>
+          }
         </article>
       }
       @if (challenges.length === 0) {
@@ -114,6 +119,40 @@
           <button class="btn secondary" type="button" (click)="closeAcceptModal()">Cancelar</button>
           <button class="btn" type="button" [disabled]="accepting" (click)="confirmAccept()">
             {{ accepting ? 'Confirmando...' : 'Confirmar reto' }}
+          </button>
+        </div>
+      </article>
+    </div>
+  }
+
+  @if (challengeToRate) {
+    <div class="modal-backdrop">
+      <article class="panel modal-card">
+        <p class="section-kicker">V31</p>
+        <h3>Calificar a {{ challengeToRate.challengingTeamName }}</h3>
+
+        @if (ratingError) {
+          <p class="inline-warning">{{ ratingError }}</p>
+        }
+
+        <label>
+          Estrellas
+          <select [(ngModel)]="ratingStars">
+            @for (option of starOptions; track option) {
+              <option [ngValue]="option">{{ option }} {{ option === 1 ? 'estrella' : 'estrellas' }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          Comentario (opcional)
+          <textarea [(ngModel)]="ratingComment" rows="3"></textarea>
+        </label>
+
+        <div class="actions">
+          <button class="btn secondary" type="button" (click)="closeRateModal()">Cancelar</button>
+          <button class="btn" type="button" [disabled]="rating" (click)="confirmRate()">
+            {{ rating ? 'Enviando...' : 'Enviar calificacion' }}
           </button>
         </div>
       </article>

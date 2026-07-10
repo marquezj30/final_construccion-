@@ -2,10 +2,13 @@ from decimal import Decimal
 from uuid import uuid4
 
 from flask import Blueprint, jsonify, request
+from sqlalchemy.orm import joinedload
 
 from ..auth import current_role, current_user_id, jwt_required
 from ..extensions import db
-from ..models import Booking, BookingHistory, CourtSchedule, utcnow
+from ..models import Booking, BookingHistory, CourtSchedule, Court, utcnow
+
+BOOKING_EAGER_OPTIONS = (joinedload(Booking.court_schedule).joinedload(CourtSchedule.court).joinedload(Court.user),)
 from ..utils import (
     as_iso,
     as_number,
@@ -108,7 +111,8 @@ def create_booking():
 @jwt_required(roles=["client"])
 def get_my_bookings():
     bookings = (
-        Booking.query.filter_by(user_id=current_user_id())
+        Booking.query.options(*BOOKING_EAGER_OPTIONS)
+        .filter_by(user_id=current_user_id())
         .order_by(Booking.created_at.desc())
         .all()
     )
@@ -129,7 +133,7 @@ def get_booking_by_id(booking_id: int):
 @bp.get("/api/bookings")
 @jwt_required(roles=["admin"])
 def get_bookings():
-    bookings = Booking.query.order_by(Booking.created_at.desc()).all()
+    bookings = Booking.query.options(*BOOKING_EAGER_OPTIONS).order_by(Booking.created_at.desc()).all()
     return jsonify([booking_response(booking) for booking in bookings])
 
 

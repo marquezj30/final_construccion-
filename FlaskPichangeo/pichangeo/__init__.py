@@ -1,3 +1,5 @@
+import re
+
 from flask import Flask, current_app, jsonify
 from flask_cors import CORS
 
@@ -7,13 +9,17 @@ from .extensions import db, oauth
 from .models import User
 
 
+LOCALHOST_ORIGIN_REGEX = re.compile(r"^https?://(localhost|127\.0\.0\.1):\d+$")
+
+
 def create_app(config_object=Config):
     app = Flask(__name__)
     app.config.from_object(config_object)
 
+    configured_origins = app.config.get("CORS_ORIGINS", ["http://localhost:4200"])
     CORS(
         app,
-        resources={r"/api/*": {"origins": app.config.get("CORS_ORIGINS", ["http://localhost:4200"])}},
+        resources={r"/api/*": {"origins": [*configured_origins, LOCALHOST_ORIGIN_REGEX]}},
         supports_credentials=True,
     )
     db.init_app(app)

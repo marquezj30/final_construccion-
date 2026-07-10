@@ -1,6 +1,7 @@
 import re
 
 from flask import Blueprint, jsonify, request
+from sqlalchemy.orm import joinedload
 
 from ..auth import current_user_id, jwt_required
 from ..extensions import db
@@ -100,7 +101,7 @@ def create_rating():
     if final_comment is not None:
         final_comment = str(final_comment).strip()
         if contains_inappropriate_content(final_comment):
-            return error("El comentario contiene lenguaje inapropiado.", 400)
+            final_comment = sanitize_comment(final_comment)
 
     rating = TeamRating(
         rating_team_id=my_leader.team_id,
@@ -122,7 +123,8 @@ def get_team_ratings(team_id: int):
         return error("Equipo no encontrado.", 404)
 
     ratings = (
-        TeamRating.query.filter_by(rated_team_id=team_id)
+        TeamRating.query.options(joinedload(TeamRating.rating_team), joinedload(TeamRating.rated_team))
+        .filter_by(rated_team_id=team_id)
         .order_by(TeamRating.created_at.desc())
         .all()
     )

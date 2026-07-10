@@ -129,6 +129,15 @@ export interface ClientSearchResult {
   email: string;
 }
 
+export interface TeamRating {
+  ratingId: number;
+  ratingTeamName: string;
+  ratedTeamName: string;
+  stars: number;
+  comment: string | null;
+  createdAt: string;
+}
+
 export interface Challenge {
   challengeId: number;
   challengingTeamId: number;

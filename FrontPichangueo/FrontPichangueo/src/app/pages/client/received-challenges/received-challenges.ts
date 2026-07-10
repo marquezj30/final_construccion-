@@ -7,6 +7,8 @@ import { timeLabel } from '../../../core/formatters';
 import { LocalDateTimePipe } from '../../../core/l10n.pipe';
 import { AvailableSchedule, Challenge } from '../../../core/models';
 
+const STAR_OPTIONS = [1, 2, 3, 4, 5];
+
 type ChallengeState = 'pending' | 'accepted' | 'rejected';
 
 @Component({
@@ -34,6 +36,14 @@ export class ReceivedChallenges implements OnInit {
   loadingSchedules = false;
   newScheduleId: number | null = null;
 
+  readonly starOptions = STAR_OPTIONS;
+  challengeToRate: Challenge | undefined;
+  ratedChallengeIds = new Set<number>();
+  ratingStars = 5;
+  ratingComment = '';
+  rating = false;
+  ratingError = '';
+
   ngOnInit(): void {
     this.loadChallenges();
   }
@@ -42,6 +52,59 @@ export class ReceivedChallenges implements OnInit {
     if (challenge.status) return 'accepted';
     if (challenge.responseDate) return 'rejected';
     return 'pending';
+  }
+
+  isCompleted(challenge: Challenge): boolean {
+    if (!challenge.status || !challenge.bookingId || !challenge.proposedDateTime) {
+      return false;
+    }
+    return new Date(challenge.proposedDateTime).getTime() < Date.now();
+  }
+
+  canRate(challenge: Challenge): boolean {
+    return this.isCompleted(challenge) && !this.ratedChallengeIds.has(challenge.challengeId);
+  }
+
+  openRateModal(challenge: Challenge): void {
+    this.challengeToRate = challenge;
+    this.ratingStars = 5;
+    this.ratingComment = '';
+    this.ratingError = '';
+  }
+
+  closeRateModal(): void {
+    this.challengeToRate = undefined;
+  }
+
+  confirmRate(): void {
+    if (!this.challengeToRate) return;
+
+    this.rating = true;
+    this.ratingError = '';
+    this.api.rateTeam({
+      ratedTeamId: this.challengeToRate.challengingTeamId,
+      stars: this.ratingStars,
+      comment: this.ratingComment.trim() || undefined,
+    }).subscribe({
+      next: () => {
+        this.rating = false;
+        this.ratedChallengeIds.add(this.challengeToRate!.challengeId);
+        this.challengeToRate = undefined;
+        this.success = 'Calificacion enviada.';
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.rating = false;
+        if (err.status === 409) {
+          this.ratingError = 'Tu equipo ya califico a este equipo.';
+        } else if (err.status === 403) {
+          this.ratingError = 'Debes ser lider de tu equipo para calificar.';
+        } else {
+          this.ratingError = err.error?.message ?? 'No se pudo enviar la calificacion.';
+        }
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   reject(challenge: Challenge): void {

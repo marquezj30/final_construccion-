@@ -2,6 +2,7 @@ from decimal import Decimal
 from uuid import uuid4
 
 from flask import Blueprint, jsonify, request
+from sqlalchemy.orm import joinedload, selectinload
 
 from ..auth import current_user_id, jwt_required
 from ..extensions import db
@@ -28,6 +29,12 @@ from ..utils import (
 
 
 bp = Blueprint("challenges", __name__)
+
+CHALLENGE_EAGER_OPTIONS = (
+    selectinload(TeamChallenge.challenging_team).selectinload(SoccerTeam.members).selectinload(TeamMember.user),
+    joinedload(TeamChallenge.challenged_team),
+    joinedload(TeamChallenge.court_schedule).joinedload(CourtSchedule.court),
+)
 
 
 def to_bool(value) -> bool:
@@ -179,7 +186,9 @@ def get_challenge(challenge_id: int):
     if my_leader is None:
         return error("No autorizado.", 403)
 
-    challenge = db.session.get(TeamChallenge, challenge_id)
+    challenge = (
+        TeamChallenge.query.options(*CHALLENGE_EAGER_OPTIONS).filter_by(id=challenge_id).first()
+    )
     if challenge is None:
         return error("Reto no encontrado.", 404)
     if challenge.challenging_team_id != my_leader.team_id and challenge.challenged_team_id != my_leader.team_id:
@@ -195,7 +204,8 @@ def get_received_challenges():
     if my_leader is None:
         return error("No autorizado.", 403)
     challenges = (
-        TeamChallenge.query.filter_by(challenged_team_id=my_leader.team_id)
+        TeamChallenge.query.options(*CHALLENGE_EAGER_OPTIONS)
+        .filter_by(challenged_team_id=my_leader.team_id)
         .order_by(TeamChallenge.created_at.desc())
         .all()
     )
@@ -209,7 +219,8 @@ def get_sent_challenges():
     if my_leader is None:
         return error("No autorizado.", 403)
     challenges = (
-        TeamChallenge.query.filter_by(challenging_team_id=my_leader.team_id)
+        TeamChallenge.query.options(*CHALLENGE_EAGER_OPTIONS)
+        .filter_by(challenging_team_id=my_leader.team_id)
         .order_by(TeamChallenge.created_at.desc())
         .all()
     )

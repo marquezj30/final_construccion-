@@ -3,15 +3,21 @@ from decimal import Decimal
 from uuid import uuid4
 
 from flask import Blueprint, jsonify, request
+from sqlalchemy.orm import joinedload
 
 from ..auth import current_role, current_user_id, jwt_required
 from ..extensions import db
-from ..models import Booking, BookingHistory, Payment, PaymentMethod, utcnow
+from ..models import Booking, BookingHistory, Court, CourtSchedule, Payment, PaymentMethod, utcnow
 from ..utils import as_iso, as_number, as_time, error, field, required_field
 
 
 bp = Blueprint("payments", __name__)
 VALID_PAYMENT_TYPES = ["advance", "full", "balance"]
+
+PAYMENT_EAGER_OPTIONS = (
+    joinedload(Payment.booking).joinedload(Booking.court_schedule).joinedload(CourtSchedule.court).joinedload(Court.user),
+    joinedload(Payment.booking).joinedload(Booking.user),
+)
 
 
 def payment_response(payment: Payment) -> dict:
@@ -153,7 +159,8 @@ def get_payments_by_booking(booking_id: int):
         return error("No autorizado.", 403)
 
     payments = (
-        Payment.query.filter_by(booking_id=booking_id)
+        Payment.query.options(*PAYMENT_EAGER_OPTIONS)
+        .filter_by(booking_id=booking_id)
         .order_by(Payment.payment_date.desc())
         .all()
     )
@@ -165,5 +172,5 @@ def get_payments_by_booking(booking_id: int):
 @bp.get("/api/payments")
 @jwt_required(roles=["admin"])
 def get_payments():
-    payments = Payment.query.order_by(Payment.payment_date.desc()).all()
+    payments = Payment.query.options(*PAYMENT_EAGER_OPTIONS).order_by(Payment.payment_date.desc()).all()
     return jsonify([payment_response(payment) for payment in payments])

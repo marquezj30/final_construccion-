@@ -36,6 +36,7 @@ class Court(db.Model):
     id = db.Column("Id", BigInt, primary_key=True)
     user_id = db.Column("userId", BigInt, db.ForeignKey("Users.Id"), nullable=False)
     number = db.Column("number", db.Integer, nullable=False)
+    name = db.Column("name", db.String(120), nullable=False)
     description = db.Column("description", db.String(500))
     surface_type = db.Column("surfaceType", db.String(100))
     player_capacity = db.Column("playerCapacity", db.Integer, nullable=False)

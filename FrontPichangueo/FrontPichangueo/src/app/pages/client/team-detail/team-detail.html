@@ -118,6 +118,53 @@
         </article>
       </div>
     }
+
+    <article class="panel">
+      <div class="panel-title">
+        <p class="section-kicker">V32</p>
+        <h3>Calificaciones</h3>
+      </div>
+
+      <div class="star-rating-summary">
+        <span class="star-rating" aria-hidden="true">
+          @for (star of starScale; track star) {
+            <span class="star" [class.filled]="star <= (team.averageStars || 0)">★</span>
+          }
+        </span>
+        <strong>{{ team.averageStars || 0 }}</strong>
+        <span>({{ ratings.length }} {{ ratings.length === 1 ? 'calificacion' : 'calificaciones' }})</span>
+      </div>
+
+      @if (ratingsError) {
+        <p class="inline-warning">{{ ratingsError }}</p>
+      }
+
+      @if (loadingRatings) {
+        <p>Cargando calificaciones...</p>
+      } @else {
+        <div class="card-list">
+          @for (rating of ratings; track rating.ratingId) {
+            <article class="rating-card">
+              <div class="panel-title">
+                <strong>{{ rating.ratingTeamName }}</strong>
+                <span class="star-rating" aria-hidden="true">
+                  @for (star of starScale; track star) {
+                    <span class="star" [class.filled]="star <= rating.stars">★</span>
+                  }
+                </span>
+              </div>
+              @if (rating.comment) {
+                <p>{{ rating.comment }}</p>
+              }
+              <small>{{ rating.createdAt | localDate }}</small>
+            </article>
+          }
+          @if (ratings.length === 0) {
+            <p>Este equipo todavia no tiene calificaciones.</p>
+          }
+        </div>
+      }
+    </article>
   } @else if (loading) {
     <article class="panel"><p>Cargando equipo...</p></article>
   }

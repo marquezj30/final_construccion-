@@ -5,11 +5,14 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Observable, Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
 import { ApiService } from '../../../core/api.service';
 import { AuthService } from '../../../core/auth.service';
-import { ClientSearchResult, Team, TeamMember } from '../../../core/models';
+import { LocalDatePipe } from '../../../core/l10n.pipe';
+import { ClientSearchResult, Team, TeamMember, TeamRating } from '../../../core/models';
+
+const STAR_SCALE = [1, 2, 3, 4, 5];
 
 @Component({
   selector: 'app-team-detail',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, LocalDatePipe],
   templateUrl: './team-detail.html',
 })
 export class TeamDetail implements OnInit {
@@ -20,6 +23,7 @@ export class TeamDetail implements OnInit {
 
   readonly teamId = Number(this.route.snapshot.paramMap.get('id'));
   readonly currentUser = this.auth.currentUser();
+  readonly starScale = STAR_SCALE;
   team: Team | undefined;
   loading = true;
   saving = false;
@@ -30,6 +34,10 @@ export class TeamDetail implements OnInit {
   ghostName = '';
   clientSuggestions: ClientSearchResult[] = [];
   showSuggestions = false;
+
+  ratings: TeamRating[] = [];
+  loadingRatings = true;
+  ratingsError = '';
 
   private readonly searchSubject = new Subject<string>();
 
@@ -43,6 +51,7 @@ export class TeamDetail implements OnInit {
 
   ngOnInit(): void {
     this.loadTeam();
+    this.loadRatings();
 
     this.searchSubject.pipe(
       debounceTime(300),
@@ -112,6 +121,23 @@ export class TeamDetail implements OnInit {
 
   leaveTeam(): void {
     this.runAction(this.api.leaveTeam(this.teamId), 'Saliste del equipo.');
+  }
+
+  private loadRatings(): void {
+    this.loadingRatings = true;
+    this.ratingsError = '';
+    this.api.getTeamRatings(this.teamId).subscribe({
+      next: (ratings) => {
+        this.ratings = ratings;
+        this.loadingRatings = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loadingRatings = false;
+        this.ratingsError = 'No se pudieron cargar las calificaciones.';
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   private runAction(request: Observable<unknown>, message: string): void {

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map, of, throwError } from 'rxjs';
 import { API_BASE_URL } from './api.config';
-import { AvailableSchedule, Booking, Challenge, ClientSearchResult, Court, CourtSchedule, Payment, Team, TeamMember } from './models';
+import { AvailableSchedule, Booking, Challenge, ClientSearchResult, Court, CourtSchedule, Payment, Team, TeamMember, TeamRating } from './models';
 
 export interface CourtPayload {
   name: string;
@@ -54,6 +54,12 @@ export interface AcceptChallengePayload {
 export interface AcceptChallengeResult {
   challenge: Challenge;
   warning?: string;
+}
+
+export interface RatingPayload {
+  ratedTeamId: number;
+  stars: number;
+  comment?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -265,6 +271,14 @@ export class ApiService {
 
   createChallengeBooking(challengeId: number, payload: { courtScheduleId: number; bookingDate: string }): Observable<Challenge> {
     return this.http.post<Challenge>(`${API_BASE_URL}/challenges/${challengeId}/booking`, payload);
+  }
+
+  rateTeam(payload: RatingPayload): Observable<TeamRating> {
+    return this.http.post<TeamRating>(`${API_BASE_URL}/ratings`, payload);
+  }
+
+  getTeamRatings(teamId: number): Observable<TeamRating[]> {
+    return this.http.get<TeamRating[]>(`${API_BASE_URL}/teams/${teamId}/ratings`);
   }
 
   private normalizeCourt(court: Court): Court {

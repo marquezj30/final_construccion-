@@ -2,6 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from flask import Blueprint, jsonify, request
+from sqlalchemy.orm import joinedload
 
 from ..auth import current_user_id, jwt_required
 from ..extensions import db
@@ -30,6 +31,7 @@ def court_response(court: Court) -> dict:
         "userId": court.user_id,
         "adminName": court.user.name if court.user else "",
         "number": court.number,
+        "name": court.name,
         "description": court.description,
         "surfaceType": court.surface_type,
         "playerCapacity": court.player_capacity,
@@ -123,6 +125,7 @@ def create_court():
     data = request.get_json(silent=True) or {}
     try:
         number = int(required_field(data, "Number", "number"))
+        name = required_field(data, "Name", "name")
         player_capacity = int(required_field(data, "PlayerCapacity", "playerCapacity", "player_capacity"))
     except ValueError as exc:
         return error(str(exc), 400)
@@ -130,6 +133,7 @@ def create_court():
     court = Court(
         user_id=current_user_id(),
         number=number,
+        name=name,
         description=field(data, "Description", "description"),
         surface_type=field(data, "SurfaceType", "surfaceType", "surface_type"),
         player_capacity=player_capacity,
@@ -148,7 +152,7 @@ def create_court():
 @bp.get("/api/courts")
 @jwt_required(roles=["admin"])
 def get_courts():
-    courts = Court.query.order_by(Court.number).all()
+    courts = Court.query.options(joinedload(Court.user)).order_by(Court.number).all()
     return jsonify([court_response(court) for court in courts])
 
 
@@ -171,6 +175,7 @@ def update_court(court_id: int):
     data = request.get_json(silent=True) or {}
     try:
         court.number = int(required_field(data, "Number", "number"))
+        court.name = required_field(data, "Name", "name")
         court.player_capacity = int(required_field(data, "PlayerCapacity", "playerCapacity", "player_capacity"))
     except ValueError as exc:
         return error(str(exc), 400)
@@ -206,7 +211,8 @@ def deactivate_court(court_id: int):
 @jwt_required(roles=["admin"])
 def get_all_schedules():
     schedules = (
-        CourtSchedule.query.join(Court)
+        CourtSchedule.query.options(joinedload(CourtSchedule.court))
+        .join(Court)
         .order_by(Court.number, CourtSchedule.day_of_week, CourtSchedule.start_time)
         .all()
     )
@@ -233,7 +239,7 @@ def _available_schedules(court_id: int | None = None):
     target_date = parse_date_datetime(booking_date_raw) if booking_date_raw else parse_date_datetime(datetime.utcnow())
     target_day = int(day_raw) if day_raw is not None else dotnet_day_of_week(target_date)
 
-    query = CourtSchedule.query.join(Court).filter(
+    query = CourtSchedule.query.options(joinedload(CourtSchedule.court).joinedload(Court.user)).join(Court).filter(
         CourtSchedule.available == True,
         Court.status == True,
         CourtSchedule.day_of_week == target_day,
@@ -289,7 +295,8 @@ def get_schedules(court_id: int):
     if db.session.get(Court, court_id) is None:
         return error("Cancha no encontrada.", 404)
     schedules = (
-        CourtSchedule.query.filter_by(court_id=court_id)
+        CourtSchedule.query.options(joinedload(CourtSchedule.court))
+        .filter_by(court_id=court_id)
         .order_by(CourtSchedule.day_of_week, CourtSchedule.start_time)
         .all()
     )

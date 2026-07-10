@@ -480,6 +480,39 @@ td {
   gap: 16px;
 }
 
+.star-rating-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.star-rating {
+  display: inline-flex;
+  gap: 2px;
+  font-size: 1.1rem;
+}
+
+.star-rating .star {
+  color: #d8dfe3;
+}
+
+.star-rating .star.filled {
+  color: #f5a524;
+}
+
+.rating-card {
+  border: 1px solid #e4ebef;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fbfcfd;
+}
+
+.rating-card small {
+  color: #667982;
+  font-weight: 800;
+}
+
 .booking-card {
   display: grid;
 }
